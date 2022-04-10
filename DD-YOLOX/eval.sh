@@ -1,0 +1,1 @@
+python3 tools/eval.py -f exps/my_yolox_s.py -c YOLOX_outputs/my_yolox_s/best_ckpt.pth -b 8 --conf 0.25 --nms 0.45 --tsize 640
