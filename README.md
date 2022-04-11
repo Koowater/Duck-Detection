@@ -4,7 +4,7 @@
 
 ## Details
 
-### [RetinaNet](link)
+### [RetinaNet](https://github.com/Koowater/Duck-Detection/DD-Detectron2)
 ### [YOLOX](link)
 ### About the project
 
