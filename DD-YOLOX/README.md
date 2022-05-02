@@ -4,12 +4,18 @@
 
 [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX)는 YOLO의 anchor-free version입니다. 구조는 더욱 간단해졌지만, 더 나은 performance를 보입니다. 
 
-> ## How to Train and Demo
+## YOLOX 학습 방법
+
+<details>
+<summary>How to Train and Demo</summary>
+<div markdown="1">
+
+ ## How to Train and Demo
 
 - `/tools` 폴더의 py 파일을 실행해 train, eval, demo, export 기능을 사용할 수 있다.
-- 인수인계 시 학습에 사용한 실행문을 `train.sh`로 저장하였다.
+- 학습에 사용한 실행문을 `train.sh`로 저장하였다.
 - 학습된 모델의 inference result는 `demo.sh`로 확인할 수 있다.
-- pretrained weights(pth file)는 github repo에서 다운로드 가능. 나는 weights/yolox_s.pth 경로에 저장하였다. weights 폴더는 이를 위해 별도로 생성한 폴더다.
+- pretrained weights(pth file)는 github repo에서 다운로드 가능하다. 이 repo에서는 `weights/yolox_s.pth` 경로에 저장하였다. `weights` 폴더는 이를 위해 별도로 생성한 폴더다.
 - `/tools/train.py`
     - `-n` 사전 정의된 모델의 이름을 통해 모델을 불러온다.
     - `-b` batch size
@@ -25,7 +31,10 @@
     - -o 1순위로 GPU 메모리를 독점
     - `-l` metrics을 위한 Logger
     - **exp 파일**은 `/exps` 폴더에 존재한다. exp 파일 수정을 통해 model에 대해 전반적인 커스텀이 가능하다. exp 파일은 `/yolox/exp/yolox_base.py`의 Exp class를 상속받고 있기 때문에 추가 수정이 필요한 경우 해당 class를 살펴보라. 인수인계자는 별도로 `my_yolox_base.py` 파일을 만들어 사용하였다.
-- YOLOX 라이브러리는 코드가 잘 정리되어 있어서 사용하는데 크게 어려움이 없었다. 코드 실행 시에도 많은 요소들을 터미널에 출력한다. YOLOX의 터미널 출력을 살펴보면 어떠한 기능이 있는지, 어떤 부분이 커스텀 가능한지 짐작가는 부분이 많을 것이다.
+- 코드 실행 시에도 많은 요소들을 터미널에 출력한다. YOLOX의 터미널 출력을 살펴보면 어떠한 기능이 있는지, 어떤 부분이 커스텀 가능한지 확인할 수 있다.
+
+</div>
+</details>
 
 ## About YOLOX
 
