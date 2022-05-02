@@ -15,6 +15,9 @@ https://arxiv.org/abs/1912.05992
 
 # Method
 
+![IoU Loss equation](IoU_Loss.png)
+
+<!--
 $$
 \begin{equation} L_{IoU}=\frac1{N_{Pos}}\sum^N_{i∈Pos}BCE(IoU_i,\hat{IoU}_i) \end{equation}
 $$
@@ -41,3 +44,6 @@ $$
 $$
 
 $p_i$: classification score, $α$: parameter to control the contribution the $p_i$ and predicted IoU [0, 1]
+
+-->
+

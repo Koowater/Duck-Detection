@@ -30,10 +30,8 @@ YOLOX는 YOLOv3-SPP에서 언급된 DarkNet53 backbone과 SPP layer를 채용했
 
     Learning rate가 cosine 함수의 주기에 따라 증가, 감소를 반복합니다. 
     
-    ```math
-    $$η_t = η_{min}+\frac12(η_{max}-η_{min})(1+cos(\frac{T_{cur}}{T_{max}}π))$$
-    ```
-    
+    ![Cosine lr schedule](my_docs/Cosine_lr_schedule.png)
+
     이는 *SGDR: Stochastic Gradient Descent with Warm Restarts*에서 처음 제안되었습니다.
 
 - [IoU loss and IoU-aware branch](my_docs/IoU-aware.md)
@@ -102,7 +100,7 @@ YOLO 시리즈는 coupled head를 유지한 채 발전해왔지만, classificati
 
 ### Multi positives
 
-YOLOv3의 assigning rule를 일관되게 하기 위해, anchor-free version YOLO는 오로지 하나의 positive sample(center location)을 가진다. 그러면서 각 object의 다른 high quality predictions를 무시한다. 그러나 이는 학습 중에 일어나는 극도의 positive/negative 불균형 문제를 완화시켜 이익이 되는 gradients를 가져온다. FCOS[[paper]()]에서는 center 3×3 영역을 positives로 정하고 "center sampling"이라고 명명했다. 
+YOLOv3의 assigning rule를 일관되게 하기 위해, anchor-free version YOLO는 오로지 하나의 positive sample(center location)을 가진다. 그러면서 각 object의 다른 high quality predictions를 무시한다. 그러나 이는 학습 중에 일어나는 극도의 positive/negative 불균형 문제를 완화시켜 이익이 되는 gradients를 가져온다. FCOS[[paper](https://openaccess.thecvf.com/content_ICCV_2019/html/Tian_FCOS_Fully_Convolutional_One-Stage_Object_Detection_ICCV_2019_paper.html)]에서는 center 3×3 영역을 positives로 정하고 "center sampling"이라고 명명했다. 
 
 ### SimOTA
 
@@ -113,9 +111,7 @@ label assignment에서 중요한 네 가지 요점이 있다.
 3. dynamic number of positive anchors for each ground-truth
 4. global view
 
-위 사항들을 반영시켜, 본 논문은 OTA를 발전시킨 SimOTA를 소개한다.
-
-(OTA와 SimOTA에 대한 설명을 추가해야한다.)
+위 사항들을 반영시켜, 본 논문은 OTA를 발전시킨 SimOTA를 소개했다.
 
 ## Comparison
 
