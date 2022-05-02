@@ -1,11 +1,11 @@
 # Duck-Detection with YOLOX
 
 ## Introduction
----
+
 [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX)는 YOLO의 anchor-free version입니다. 구조는 더욱 간단해졌지만, 더 나은 performance를 보입니다. 
 
 ## About YOLOX
----
+
 **_아래의 설명은 [YOLOX paper](https://arxiv.org/abs/2107.08430)를 읽고 정리한 것입니다._**
 
 다음은 최근 one-stage object detection 분야에서 성능 향상을 위해 제안된 알고리즘입니다.
@@ -30,11 +30,13 @@ YOLOX는 YOLOv3-SPP에서 언급된 DarkNet53 backbone과 SPP layer를 채용했
 
     Learning rate가 cosine 함수의 주기에 따라 증가, 감소를 반복합니다. 
     
+    ```math
     $$η_t = η_{min}+\frac12(η_{max}-η_{min})(1+cos(\frac{T_{cur}}{T_{max}}π))$$
-
+    ```
+    
     이는 *SGDR: Stochastic Gradient Descent with Warm Restarts*에서 처음 제안되었습니다.
 
-- [IoU loss and IoU-aware branch]()
+- [IoU loss and IoU-aware branch](my_docs/IoU-aware.md)
 
     IoU-branch를 통해 predicted box의 IoU를 추론해 predicted box의 confidence score와 localization accuracy의 상관관계를 강화합니다.
 
@@ -125,5 +127,5 @@ Table 6: COCO 2017 test-dev에서의 다양한 object detectors의 accuracy와 s
 본 논문에서는 YOLOv3에 decoupled head, anchor-free, advanced label assigning strategy등 최근의 발전된 detection techniques를 적용한 YOLOX를 소개했다. 이는 다른 YOLO models와 비교하여 speed와 accuracy에서 더 나은 trade-off 관계를 보여줬다. 그리고 별도의 hyperparameter tuning 없이도 일반화된 성능을 보여준다. YOLOX를 통해 실제 환경에서 기존보다 더 나은 성능의 one-stage object detection을 경험하기 바란다.
 
 ## Reference
----
+
 - Ge, Z., Liu, S., Wang, F., Li, Z., & Sun, J. (2021). Yolox: Exceeding yolo series in 2021. arXiv preprint arXiv:2107.08430.
