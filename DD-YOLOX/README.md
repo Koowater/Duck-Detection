@@ -1,224 +1,129 @@
-<div align="center"><img src="assets/logo.png" width="350"></div>
-<img src="assets/demo.png" >
+# Duck-Detection with YOLOX
 
 ## Introduction
-YOLOX is an anchor-free version of YOLO, with a simpler design but better performance! It aims to bridge the gap between research and industrial communities.
-For more details, please refer to our [report on Arxiv](https://arxiv.org/abs/2107.08430).
+---
+[YOLOX](https://github.com/Megvii-BaseDetection/YOLOX)는 YOLO의 anchor-free version입니다. 구조는 더욱 간단해졌지만, 더 나은 performance를 보입니다. 
 
-This repo is an implementation of PyTorch version YOLOX, there is also a [MegEngine implementation](https://github.com/MegEngine/YOLOX).
+## About YOLOX
+---
+**_아래의 설명은 [YOLOX paper](https://arxiv.org/abs/2107.08430)를 읽고 정리한 것입니다._**
 
-<img src="assets/git_fig.png" width="1000" >
+다음은 최근 one-stage object detection 분야에서 성능 향상을 위해 제안된 알고리즘입니다.
 
-## Updates!!
-* 【2021/08/19】 We optimize the training process with **2x** faster training and **~1%** higher performance! See [notes](docs/updates_note.md) for more details.
-* 【2021/08/05】 We release [MegEngine version YOLOX](https://github.com/MegEngine/YOLOX).
-* 【2021/07/28】 We fix the fatal error of [memory leak](https://github.com/Megvii-BaseDetection/YOLOX/issues/103)
-* 【2021/07/26】 We now support [MegEngine](https://github.com/Megvii-BaseDetection/YOLOX/tree/main/demo/MegEngine) deployment.
-* 【2021/07/20】 We have released our technical report on [Arxiv](https://arxiv.org/abs/2107.08430).
+1. anchor-free detection
+2. advanced label assignment strategies
+3. end-to-end (NMS-free) detectors
 
-## Comming soon
-- [ ] YOLOX-P6 and larger model.
-- [ ] Objects365 pretrain.
-- [ ] Transformer modules.
-- [ ] More features in need.
+이러한 알고리즘들을 YOLO 모델에 적용시키는 것이 YOLOX의 목표입니다. YOLOv4, v5는 이미 anchor-based pipeline에 최적화 되었기 때문에 YOLOv3을 기준으로 개선 사항을 적용할 것입니다.
 
-## Benchmark
+### YOLOv3 baseline
 
-#### Standard Models.
+YOLOX는 YOLOv3-SPP에서 언급된 DarkNet53 backbone과 SPP layer를 채용했습니다.
 
-|Model |size |mAP<sup>val<br>0.5:0.95 |mAP<sup>test<br>0.5:0.95 | Speed V100<br>(ms) | Params<br>(M) |FLOPs<br>(G)| weights |
-| ------        |:---: | :---:    | :---:       |:---:     |:---:  | :---: | :----: |
-|[YOLOX-s](./exps/default/yolox_s.py)    |640  |40.5 |40.5      |9.8      |9.0 | 26.8 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_s.pth) |
-|[YOLOX-m](./exps/default/yolox_m.py)    |640  |46.9 |47.2      |12.3     |25.3 |73.8| [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_m.pth) |
-|[YOLOX-l](./exps/default/yolox_l.py)    |640  |49.7 |50.1      |14.5     |54.2| 155.6 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_l.pth) |
-|[YOLOX-x](./exps/default/yolox_x.py)   |640   |51.1 |**51.5**  | 17.3    |99.1 |281.9 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_x.pth) |
-|[YOLOX-Darknet53](./exps/default/yolov3.py)   |640  | 47.7 | 48.0 | 11.1 |63.7 | 185.3 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_darknet.pth) |
+여기에 다음 사항을 추가했습니다.
 
-<details>
-<summary>Legacy models</summary>
+- EMA weights updating
+    
+    Model의 trainable weights의 이동평균을 weights로 update하는 방식입니다. 일정 기간의 이전 weights를 shadow로써 저장해두고 이동평균을 구합니다. 
 
-|Model |size |mAP<sup>test<br>0.5:0.95 | Speed V100<br>(ms) | Params<br>(M) |FLOPs<br>(G)| weights |
-| ------        |:---: | :---:       |:---:     |:---:  | :---: | :----: |
-|[YOLOX-s](./exps/default/yolox_s.py)    |640  |39.6      |9.8     |9.0 | 26.8 | [onedrive](https://megvii-my.sharepoint.cn/:u:/g/personal/gezheng_megvii_com/EW62gmO2vnNNs5npxjzunVwB9p307qqygaCkXdTO88BLUg?e=NMTQYw)/[github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_s.pth) |
-|[YOLOX-m](./exps/default/yolox_m.py)    |640  |46.4      |12.3     |25.3 |73.8| [onedrive](https://megvii-my.sharepoint.cn/:u:/g/personal/gezheng_megvii_com/ERMTP7VFqrVBrXKMU7Vl4TcBQs0SUeCT7kvc-JdIbej4tQ?e=1MDo9y)/[github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_m.pth) |
-|[YOLOX-l](./exps/default/yolox_l.py)    |640  |50.0  |14.5 |54.2| 155.6 | [onedrive](https://megvii-my.sharepoint.cn/:u:/g/personal/gezheng_megvii_com/EWA8w_IEOzBKvuueBqfaZh0BeoG5sVzR-XYbOJO4YlOkRw?e=wHWOBE)/[github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_l.pth) |
-|[YOLOX-x](./exps/default/yolox_x.py)   |640  |**51.2**      | 17.3 |99.1 |281.9 | [onedrive](https://megvii-my.sharepoint.cn/:u:/g/personal/gezheng_megvii_com/EdgVPHBziOVBtGAXHfeHI5kBza0q9yyueMGdT0wXZfI1rQ?e=tABO5u)/[github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_x.pth) |
-|[YOLOX-Darknet53](./exps/default/yolov3.py)   |640  | 47.4      | 11.1 |63.7 | 185.3 | [onedrive](https://megvii-my.sharepoint.cn/:u:/g/personal/gezheng_megvii_com/EZ-MV1r_fMFPkPrNjvbJEMoBLOLAnXH-XKEB77w8LhXL6Q?e=mf6wOc)/[github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_darknet53.pth) |
+- cosine lr schedule
 
-</details>
+    Learning rate가 cosine 함수의 주기에 따라 증가, 감소를 반복합니다. 
+    
+    $$η_t = η_{min}+\frac12(η_{max}-η_{min})(1+cos(\frac{T_{cur}}{T_{max}}π))$$
 
-#### Light Models.
+    이는 *SGDR: Stochastic Gradient Descent with Warm Restarts*에서 처음 제안되었습니다.
 
-|Model |size |mAP<sup>val<br>0.5:0.95 | Params<br>(M) |FLOPs<br>(G)| weights |
-| ------        |:---:  |  :---:       |:---:     |:---:  | :---: |
-|[YOLOX-Nano](./exps/default/nano.py) |416  |25.8  | 0.91 |1.08 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.pth) |
-|[YOLOX-Tiny](./exps/default/yolox_tiny.py) |416  |32.8 | 5.06 |6.45 | [github](https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_tiny.pth) |
+- [IoU loss and IoU-aware branch]()
 
+    IoU-branch를 통해 predicted box의 IoU를 추론해 predicted box의 confidence score와 localization accuracy의 상관관계를 강화합니다.
 
-<details>
-<summary>Legacy models</summary>
+- BCE loss for class branch and object branch
 
-|Model |size |mAP<sup>val<br>0.5:0.95 | Params<br>(M) |FLOPs<br>(G)| weights |
-| ------        |:---:  |  :---:       |:---:     |:---:  | :---: |
-|[YOLOX-Nano](./exps/default/nano.py) |416  |25.3  | 0.91 |1.08 | [github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_nano.pth) |
-|[YOLOX-Tiny](./exps/default/yolox_tiny.py) |416  |32.8 | 5.06 |6.45 | [github](https://github.com/Megvii-BaseDetection/storage/releases/download/0.0.1/yolox_tiny_32dot8.pth) |
+- Simple data augmentation
 
-</details>
+    RandomHorizontalFlip, ColorJitter, multi-scale augmentation을 사용하였습니다.
 
-## Quick Start
+    RandomResizedCrop은 사용하지 않았습니다. RandomResizedCrop이 향후 소개할 mosaic augmentation과 중복되기 때문입니다.
 
-<details>
-<summary>Installation</summary>
+### Decoupled head
 
-Step1. Install YOLOX from source.
-```shell
-git clone git@github.com:Megvii-BaseDetection/YOLOX.git
-cd YOLOX
-pip3 install -v -e .  # or  python3 setup.py develop
-```
+YOLO 시리즈는 coupled head를 유지한 채 발전해왔지만, classification branch와 localization branch가 분리된 decoupled head는 이제 one-stage 또는 two-stage object detedtion에서 널리 사용되고 있습니다. 이유는 다음과 같습니다.
 
-</details>
+1. YOLO의 head를 decoupled head로 대체하면, 수렴 속도를 매우 크게 향상시킬 수 있습니다.
 
-<details>
-<summary>Demo</summary>
+    ![Fig3](my_docs/Fig3.png)
+    Figure 3: YOLOv3 head와 decoupled head가 적용된 detector의 학습 곡선입니다. COCO val에서 매 10 epochs마다 AP를 측정하였습니다. 이는 decoupled head가 기존 YOLOv3 head보다 더욱 빠르게 수렴하고 더 나은 성능에 도달함을 보여줍니다.
 
-Step1. Download a pretrained model from the benchmark table.
+2. decoupled head는 end-to-end 버전의 YOLO를 위해 꼭 필요하다.
 
-Step2. Use either -n or -f to specify your detector's config. For example:
+    |Models         |Coupled Head|Decoupled Head|
+    |---------------|:----------:|:------------:|
+    |Vanilla YOLO   |38.5        |39.6          |
+    |End-to-end YOLO|34.3(-4.2)  |38.8(-0.8)    |
 
-```shell
-python tools/demo.py image -n yolox-s -c /path/to/your/yolox_s.pth --path assets/dog.jpg --conf 0.25 --nms 0.45 --tsize 640 --save_result --device [cpu/gpu]
-```
-or
-```shell
-python tools/demo.py image -f exps/default/yolox_s.py -c /path/to/your/yolox_s.pth --path assets/dog.jpg --conf 0.25 --nms 0.45 --tsize 640 --save_result --device [cpu/gpu]
-```
-Demo for video:
-```shell
-python tools/demo.py video -n yolox-s -c /path/to/your/yolox_s.pth --path /path/to/your/video --conf 0.25 --nms 0.45 --tsize 640 --save_result --device [cpu/gpu]
-```
+    Table 1: end-to-end YOLO에 대한 decoupled head의 효과. COCO dataset에서의 AP (%)로 측정.
 
+### Strong data augmentation
 
-</details>
+- #### Mosaic
 
-<details>
-<summary>Reproduce our results on COCO</summary>
+    YOLOv4에서 새로운 방법의 data augmentation로 소개되었으며, 다른 detector에서도 널리 사용되고 있다. (이미지 출처: [YOLOv4 paper](https://arxiv.org/abs/2004.10934))
+    
+    ![Mosaic](my_docs/mosaic.png)
 
-Step1. Prepare COCO dataset
-```shell
-cd <YOLOX_HOME>
-ln -s /path/to/your/COCO ./datasets/COCO
-```
+    Mosaic는 4개의 training image를 섞는 기법이다. 반면에 CutMix는 2개의 이미지를 합친다. 이를 통해 일반적인 image의 context가 아닌, 다양한 크기(대체로 4개의 image를 하나로 합치면, object의 크기는 상대적으로 줄어들어 작은 object에 대한 학습이 가능하다.)와 다양한 위치(원본 이미지가 중앙에 있더라도 4개의 image를 합치면 더욱 다양한 위치에 object가 위치한다.)에서의 학습이 가능하다. 게다가 하나의 이미지를 학습할 때 4개의 이미지를 학습한 것과 유사하기 때문에 mini-batch size를 줄인 것과 같은 효과를 얻을 수 있다.
 
-Step2. Reproduce our results on COCO by specifying -n:
+- #### MixUp
 
-```shell
-python -m yolox.tools.train -n yolox-s -d 8 -b 64 --fp16 -o [--cache]
-                               yolox-m
-                               yolox-l
-                               yolox-x
-```
-* -d: number of gpu devices
-* -b: total batch size, the recommended number for -b is num-gpu * 8
-* --fp16: mixed precision training
-* --cache: caching imgs into RAM to accelarate training, which need large system RAM. 
+    classification 분야에서 사용되는 data augmentation 방식이다. 두 image를 linear interpolation을 통해 하나의 blended image로 만들며, one-hot encoded label에도 똑같은 연산을 수행한다. 
 
-  
-When using -f, the above commands are equivalent to:
-```shell
-python -m yolox.tools.train -f exps/default/yolox_s.py -d 8 -b 64 --fp16 -o [--cache]
-                               exps/default/yolox_m.py
-                               exps/default/yolox_l.py
-                               exps/default/yolox_x.py
-```
-  
-**Multi Machine Training**
+    개선 가능 사항 : CutMix[[paper](https://openaccess.thecvf.com/content_ICCV_2019/html/Yun_CutMix_Regularization_Strategy_to_Train_Strong_Classifiers_With_Localizable_Features_ICCV_2019_paper.html)]에서 MixUp의 한계를 주장하기도 했다. MixUp 대신 CutMix를 사용해보는 것도 고려해볼 수 있다.
+    
+### **Anchor-free**
 
-We also support multi-nodes training. Just add the following args:
-* --num\_machines: num of your total training nodes
-* --machine\_rank: specify the rank of each node
+#### anchor mechanism의 문제점
 
-Suppose you want to train YOLOX on 2 machines, and your master machines's IP is 123.123.123.123, use port 12312 and TCP.  
-On master machine, run
-```shell
-python tools/train.py -n yolox-s -b 128 --dist-url tcp://123.123.123.123:12312 --num-machines 2 --machine-rank 0
-```
-On the second machine, run
-```shell
-python tools/train.py -n yolox-s -b 128 --dist-url tcp://123.123.123.123:12312 --num-machines 2 --machine-rank 1
-```
+1. 최적의 performance를 달성하려면, clustering analysis를 통해 학습 전에 최적의 anchors의 집하블 결정해야한다. 이는 domain-specific하며 task에 대해 덜 일반화되어있다.
 
-**Others**  
-See more information with the following command:
-```shell
-python -m yolox.tools.train --help
-```
-  
-</details>
+2. anchor mechamism은 detection heads의 복잡도를 증가시킨다.
 
+    anchor-free detectors는 anchor-based detectors만큼의 성능 발전을 보여왔고, heuristic tuning과 그 외 많은 trick들이 필요없다. 이는 design parameter를 더욱 간단하게 만든다.
 
-<details>
-<summary>Evaluation</summary>
+#### YOLO를 anchor-free 방식으로 변경하는 방법
 
-We support batch testing for fast evaluation:
+- 각각의 location에서의 predictions를 3에서 1로 줄이고, prediction이 predicted box의 grid의 left-top corner, height와 width를 직접 추론한다.
 
-```shell
-python -m yolox.tools.eval -n  yolox-s -c yolox_s.pth -b 64 -d 8 --conf 0.001 [--fp16] [--fuse]
-                               yolox-m
-                               yolox-l
-                               yolox-x
-```
-* --fuse: fuse conv and bn
-* -d: number of GPUs used for evaluation. DEFAULT: All GPUs available will be used.
-* -b: total batch size across on all GPUs
+- 각 object의 중심 위치를 positive sample로 정하고 scale range를 사전에 정의한다. 이는 각 object의 FPN level를 지명하기 위함이다.
 
-To reproduce speed test, we use the following command:
-```shell
-python -m yolox.tools.eval -n  yolox-s -c yolox_s.pth -b 1 -d 1 --conf 0.001 --fp16 --fuse
-                               yolox-m
-                               yolox-l
-                               yolox-x
-```
+    이러한 변경사항들이 parameter의 수를 줄이고 detector의 GFLOPS를 줄여 빠르게 만든다. 그러면서 성능은 유지한다.
 
-</details>
+### Multi positives
 
+YOLOv3의 assigning rule를 일관되게 하기 위해, anchor-free version YOLO는 오로지 하나의 positive sample(center location)을 가진다. 그러면서 각 object의 다른 high quality predictions를 무시한다. 그러나 이는 학습 중에 일어나는 극도의 positive/negative 불균형 문제를 완화시켜 이익이 되는 gradients를 가져온다. FCOS[[paper]()]에서는 center 3×3 영역을 positives로 정하고 "center sampling"이라고 명명했다. 
 
-<details>
-<summary>Tutorials</summary>
+### SimOTA
 
-*  [Training on custom data](docs/train_custom_data.md)
-*  [Manipulating training image size](docs/manipulate_training_image_size.md)
-*  [Freezing model](docs/freeze_module.md)
+label assignment에서 중요한 네 가지 요점이 있다.
 
-</details>
+1. loss/quality aware
+2. center prior
+3. dynamic number of positive anchors for each ground-truth
+4. global view
 
-## Deployment
+위 사항들을 반영시켜, 본 논문은 OTA를 발전시킨 SimOTA를 소개한다.
 
+(OTA와 SimOTA에 대한 설명을 추가해야한다.)
 
-1.  [MegEngine in C++ and Python](./demo/MegEngine)
-2.  [ONNX export and an ONNXRuntime](./demo/ONNXRuntime)
-3.  [TensorRT in C++ and Python](./demo/TensorRT)
-4.  [ncnn in C++ and Java](./demo/ncnn)
-5.  [OpenVINO in C++ and Python](./demo/OpenVINO)
+## Comparison
 
+![Comparison](my_docs/Comparison.png)
+Table 6: COCO 2017 test-dev에서의 다양한 object detectors의 accuracy와 speed 비교. 공정한 비교를 위해 모든 model들은 300 epochs 학습하였다.
 
-## Third-party resources
-* Integrated into [Huggingface Spaces 🤗](https://huggingface.co/spaces) using [Gradio](https://github.com/gradio-app/gradio). Try out the Web Demo: [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Sultannn/YOLOX-Demo)
-* The ncnn android app with video support: [ncnn-android-yolox](https://github.com/FeiGeChuanShu/ncnn-android-yolox) from [FeiGeChuanShu](https://github.com/FeiGeChuanShu)
-* YOLOX with Tengine support: [Tengine](https://github.com/OAID/Tengine/blob/tengine-lite/examples/tm_yolox.cpp) from [BUG1989](https://github.com/BUG1989)
-* YOLOX + ROS2 Foxy: [YOLOX-ROS](https://github.com/Ar-Ray-code/YOLOX-ROS) from [Ar-Ray](https://github.com/Ar-Ray-code)
-* YOLOX Deploy DeepStream: [YOLOX-deepstream](https://github.com/nanmi/YOLOX-deepstream) from [nanmi](https://github.com/nanmi)
-* YOLOX MNN/TNN/ONNXRuntime: [YOLOX-MNN](https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/mnn/cv/mnn_yolox.cpp)、[YOLOX-TNN](https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/tnn/cv/tnn_yolox.cpp) and [YOLOX-ONNXRuntime C++](https://github.com/DefTruth/lite.ai.toolkit/blob/main/lite/ort/cv/yolox.cpp) from [DefTruth](https://github.com/DefTruth)
-* Converting darknet or yolov5 datasets to COCO format for YOLOX: [YOLO2COCO](https://github.com/RapidAI/YOLO2COCO) from [Daniel](https://github.com/znsoftm)
+## Conclusion
 
-## Cite YOLOX
-If you use YOLOX in your research, please cite our work by using the following BibTeX entry:
+본 논문에서는 YOLOv3에 decoupled head, anchor-free, advanced label assigning strategy등 최근의 발전된 detection techniques를 적용한 YOLOX를 소개했다. 이는 다른 YOLO models와 비교하여 speed와 accuracy에서 더 나은 trade-off 관계를 보여줬다. 그리고 별도의 hyperparameter tuning 없이도 일반화된 성능을 보여준다. YOLOX를 통해 실제 환경에서 기존보다 더 나은 성능의 one-stage object detection을 경험하기 바란다.
 
-```latex
- @article{yolox2021,
-  title={YOLOX: Exceeding YOLO Series in 2021},
-  author={Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian},
-  journal={arXiv preprint arXiv:2107.08430},
-  year={2021}
-}
-```
+## Reference
+---
+- Ge, Z., Liu, S., Wang, F., Li, Z., & Sun, J. (2021). Yolox: Exceeding yolo series in 2021. arXiv preprint arXiv:2107.08430.
