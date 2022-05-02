@@ -10,8 +10,6 @@
 <summary>How to Train and Demo</summary>
 <div markdown="1">
 
- ## How to Train and Demo
-
 - `/tools` 폴더의 py 파일을 실행해 train, eval, demo, export 기능을 사용할 수 있다.
 - 학습에 사용한 실행문을 `train.sh`로 저장하였다.
 - 학습된 모델의 inference result는 `demo.sh`로 확인할 수 있다.
